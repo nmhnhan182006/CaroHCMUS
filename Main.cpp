@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -44,9 +44,7 @@ namespace {
 
     int ReadKeyUpper() {
         int ch = _getch();
-
         if (ch == 13) return 13;
-
         if (ch >= 'a' && ch <= 'z') ch = ch - 'a' + 'A';
         return ch;
     }
@@ -95,11 +93,9 @@ namespace {
     Position FindDefaultCursor(const GameSession& game) {
         int n = GetBoardSize(game);
         Position center(n / 2, n / 2);
-
         if (IsInsideBoard(game, center) && IsCellEmpty(game, center)) {
             return center;
         }
-
         return FindFirstEmptyCell(game);
     }
 
@@ -109,18 +105,15 @@ namespace {
 
     void PrintBoardWithCursor(const GameSession& game, const Position& cursor) {
         int n = GetBoardSize(game);
-
         cout << "     ";
         for (int c = 0; c < n; ++c) {
             cout << setw(3) << c;
         }
         cout << "\n";
-
         for (int r = 0; r < n; ++r) {
             cout << setw(3) << r << "  ";
             for (int c = 0; c < n; ++c) {
                 char ch = CellToChar(GetCell(game, Position(r, c)));
-
                 if (r == cursor.row && c == cursor.col) {
                     cout << "[" << ch << "]";
                 }
@@ -178,20 +171,17 @@ namespace {
 
     string GetSlotDisplayText(int slot) {
         string path = BuildSavePath(slot);
-
         if (!FileExists(path)) {
             ostringstream oss;
             oss << "Slot " << slot << " : [Trong]";
             return oss.str();
         }
-
         GameSession temp;
         if (!LoadGameFromFile(temp, path)) {
             ostringstream oss;
             oss << "Slot " << slot << " : [File loi]";
             return oss.str();
         }
-
         ostringstream oss;
         oss << "Slot " << slot << " : ";
         if (!temp.currentSaveName.empty()) oss << temp.currentSaveName;
@@ -203,12 +193,9 @@ namespace {
 
     void RunBotMove(GameSession& game, string& message) {
         if (!IsBotTurn(game)) return;
-
         Position aiMove = FindBestAIMove(game);
         if (!IsValidPosition(aiMove)) return;
-
         ActionResult result = PlaceCurrentTurn(game, aiMove);
-
         if (result == ActionResult::Success) {
             ostringstream oss;
             oss << "BOT danh vao (" << aiMove.row << ", " << aiMove.col << ")";
@@ -219,21 +206,16 @@ namespace {
     bool ShowSaveMenu(GameSession& game) {
         int selected = 0;
         string message;
-
         while (true) {
             ClearScreen();
             cout << "=========== SAVE GAME ===========\n\n";
-
             for (int i = 0; i < config::MAX_SAVE_SLOTS; ++i) {
                 PrintSelectableLine(GetSlotDisplayText(i + 1), selected == i);
             }
             PrintSelectableLine("Quay lai", selected == config::MAX_SAVE_SLOTS);
-
             cout << "\nW/S de chon, Enter de save.\n";
             if (!message.empty()) cout << "\n" << message << "\n";
-
             int key = ReadKeyUpper();
-
             if (key == 'W') {
                 selected--;
                 if (selected < 0) selected = config::MAX_SAVE_SLOTS;
@@ -243,15 +225,10 @@ namespace {
                 if (selected > config::MAX_SAVE_SLOTS) selected = 0;
             }
             else if (key == 13) {
-                if (selected == config::MAX_SAVE_SLOTS) {
-                    return false;
-                }
-
+                if (selected == config::MAX_SAVE_SLOTS) return false;
                 int slot = selected + 1;
                 string path = BuildSavePath(slot);
-
                 game.currentSaveName = BuildAutoSaveName(game, slot);
-
                 if (SaveGameToFile(game, path)) {
                     message = "Save thanh cong vao slot " + to_string(slot);
                     ClearScreen();
@@ -262,60 +239,6 @@ namespace {
                 }
                 else {
                     message = "Save that bai";
-                }
-            }
-            else if (key == 27) {
-                return false;
-            }
-        }
-    }
-
-    bool ShowLoadMenu(GameSession& game) {
-        int selected = 0;
-        string message;
-
-        while (true) {
-            ClearScreen();
-            cout << "=========== LOAD GAME ===========\n\n";
-
-            for (int i = 0; i < config::MAX_SAVE_SLOTS; ++i) {
-                PrintSelectableLine(GetSlotDisplayText(i + 1), selected == i);
-            }
-            PrintSelectableLine("Quay lai", selected == config::MAX_SAVE_SLOTS);
-
-            cout << "\nW/S de chon, Enter de load.\n";
-            if (!message.empty()) cout << "\n" << message << "\n";
-
-            int key = ReadKeyUpper();
-
-            if (key == 'W') {
-                selected--;
-                if (selected < 0) selected = config::MAX_SAVE_SLOTS;
-            }
-            else if (key == 'S') {
-                selected++;
-                if (selected > config::MAX_SAVE_SLOTS) selected = 0;
-            }
-            else if (key == 13) {
-                if (selected == config::MAX_SAVE_SLOTS) {
-                    return false;
-                }
-
-                int slot = selected + 1;
-                string path = BuildSavePath(slot);
-
-                if (!FileExists(path)) {
-                    message = "Slot nay dang trong";
-                    continue;
-                }
-
-                if (LoadGameFromFile(game, path)) {
-                    game.screen = ScreenState::Playing;
-                    game.isPaused = false;
-                    return true;
-                }
-                else {
-                    message = "Load that bai";
                 }
             }
             else if (key == 27) {
@@ -335,31 +258,24 @@ namespace {
     void ChangeAIDifficulty(GameSettings& settings, int direction) {
         int value = (int)settings.aiDifficulty;
         value += direction;
-
         if (value < 0) value = 3;
         if (value > 3) value = 0;
-
         settings.aiDifficulty = (AIDifficulty)value;
     }
 
     bool ShowNewGameMenu(GameSession& game) {
         GameSettings settings = CreateDefaultSettings();
         int selected = 0;
-
         while (true) {
             ClearScreen();
             cout << "=========== NEW GAME ===========\n\n";
-
             PrintSelectableLine("Game Mode   : " + string(ToString(settings.gameMode)), selected == 0);
             PrintSelectableLine("Rule Mode   : " + string(ToString(settings.ruleMode)), selected == 1);
             PrintSelectableLine("AI Level    : " + string(ToString(settings.aiDifficulty)), selected == 2);
             PrintSelectableLine("Bat dau game", selected == 3);
             PrintSelectableLine("Quay lai", selected == 4);
-
             cout << "\nW/S de di chuyen, A/D de doi option, Enter de chon.\n";
-
             int key = ReadKeyUpper();
-
             if (key == 'W') {
                 selected--;
                 if (selected < 0) selected = 4;
@@ -384,7 +300,6 @@ namespace {
                     string playerO = (settings.gameMode == GameMode::PVE)
                         ? string(config::DEFAULT_BOT_NAME)
                         : string(config::DEFAULT_PLAYER_O_NAME);
-
                     StartNewGame(game, settings, playerX, playerO);
                     game.screen = ScreenState::Playing;
                     return true;
@@ -407,20 +322,15 @@ namespace {
 
     PauseAction ShowPauseMenu(GameSession& game) {
         int selected = 0;
-
         while (true) {
             ClearScreen();
             cout << "=========== MENU TAM DUNG ===========\n\n";
-
             PrintSelectableLine("Tiep tuc", selected == 0);
             PrintSelectableLine("Save game", selected == 1);
             PrintSelectableLine("Choi lai tran nay", selected == 2);
             PrintSelectableLine("Ve menu chinh", selected == 3);
-
             cout << "\nW/S de chon, Enter de xac nhan.\n";
-
             int key = ReadKeyUpper();
-
             if (key == 'W') {
                 selected--;
                 if (selected < 0) selected = 3;
@@ -431,15 +341,9 @@ namespace {
             }
             else if (key == 13) {
                 if (selected == 0) return PauseAction::ContinueGame;
-                if (selected == 1) {
-                    ShowSaveMenu(game);
-                }
-                else if (selected == 2) {
-                    return PauseAction::RestartGame;
-                }
-                else if (selected == 3) {
-                    return PauseAction::BackToMainMenu;
-                }
+                if (selected == 1) ShowSaveMenu(game);
+                else if (selected == 2) return PauseAction::RestartGame;
+                else if (selected == 3) return PauseAction::BackToMainMenu;
             }
             else if (key == 27) {
                 return PauseAction::ContinueGame;
@@ -449,20 +353,15 @@ namespace {
 
     bool ShowResultMenu(GameSession& game) {
         int selected = 0;
-
         while (true) {
             ClearScreen();
             cout << "=========== KET THUC VAN ===========\n\n";
             cout << "Ket qua: " << ResultToText(game.result) << "\n\n";
-
             PrintSelectableLine("Choi lai", selected == 0);
             PrintSelectableLine("Save game", selected == 1);
             PrintSelectableLine("Ve menu chinh", selected == 2);
-
             cout << "\nW/S de chon, Enter de xac nhan.\n";
-
             int key = ReadKeyUpper();
-
             if (key == 'W') {
                 selected--;
                 if (selected < 0) selected = 2;
@@ -476,99 +375,22 @@ namespace {
                     ResetCurrentMatch(game);
                     return true;
                 }
-                else if (selected == 1) {
-                    ShowSaveMenu(game);
-                }
-                else if (selected == 2) {
-                    return false;
-                }
-            }
-        }
-    }
-
-    void RunGameLoop(GameSession& game) {
-        Position cursor = FindDefaultCursor(game);
-        string message;
-
-        while (true) {
-            if (IsBotTurn(game)) {
-                RunBotMove(game, message);
-                cursor = FindDefaultCursor(game);
-            }
-
-            if (game.result != GameResult::InProgress) {
-                bool continuePlaying = ShowResultMenu(game);
-                if (!continuePlaying) return;
-                cursor = FindDefaultCursor(game);
-                message.clear();
-                continue;
-            }
-
-            DrawGameScreen(game, cursor, message);
-
-            int key = ReadKeyUpper();
-
-            if (key == 'W') {
-                if (cursor.row > 0) cursor.row--;
-            }
-            else if (key == 'S') {
-                if (cursor.row + 1 < GetBoardSize(game)) cursor.row++;
-            }
-            else if (key == 'A') {
-                if (cursor.col > 0) cursor.col--;
-            }
-            else if (key == 'D') {
-                if (cursor.col + 1 < GetBoardSize(game)) cursor.col++;
-            }
-            else if (key == 13) {
-                ActionResult result = PlaceCurrentTurn(game, cursor);
-
-                if (result == ActionResult::Success) {
-                    message = "Danh co thanh cong";
-                }
-                else if (result == ActionResult::Occupied) {
-                    message = "O nay da duoc danh";
-                }
-                else if (result == ActionResult::OutOfBounds) {
-                    message = "Vi tri ngoai ban co";
-                }
-                else {
-                    message = "Khong the danh nuoc nay";
-                }
-            }
-            else if (key == 'P' || key == 27) {
-                PauseAction action = ShowPauseMenu(game);
-
-                if (action == PauseAction::ContinueGame) {
-                    message = "Tiep tuc game";
-                }
-                else if (action == PauseAction::RestartGame) {
-                    ResetCurrentMatch(game);
-                    cursor = FindDefaultCursor(game);
-                    message = "Da bat dau lai tran dau";
-                }
-                else if (action == PauseAction::BackToMainMenu) {
-                    return;
-                }
+                else if (selected == 1) ShowSaveMenu(game);
+                else if (selected == 2) return false;
             }
         }
     }
 
     int ShowMainMenu() {
         int selected = 0;
-
         while (true) {
             ClearScreen();
             cout << "=========== CARO GAME ===========\n\n";
-
             PrintSelectableLine("New Game", selected == 0);
             PrintSelectableLine("Load Game", selected == 1);
             PrintSelectableLine("Exit", selected == 2);
-
             cout << "\nW/S de di chuyen, Enter de chon.\n";
-
             int key = ReadKeyUpper();
-
             if (key == 'W') {
                 selected--;
                 if (selected < 0) selected = 2;
@@ -585,30 +407,119 @@ namespace {
 
 } // namespace
 
-int main() {
-    EnsureSaveDirectory();
+// ===== CÁC HÀM PUBLIC — nằm ngoài namespace =====
 
+void RunGameLoop(caro::GameSession& game) {
+    Position cursor = FindDefaultCursor(game);
+    string message;
+    while (true) {
+        if (IsBotTurn(game)) {
+            RunBotMove(game, message);
+            cursor = FindDefaultCursor(game);
+        }
+        if (game.result != GameResult::InProgress) {
+            bool continuePlaying = ShowResultMenu(game);
+            if (!continuePlaying) return;
+            cursor = FindDefaultCursor(game);
+            message.clear();
+            continue;
+        }
+        DrawGameScreen(game, cursor, message);
+        int key = ReadKeyUpper();
+        if (key == 'W') {
+            if (cursor.row > 0) cursor.row--;
+        }
+        else if (key == 'S') {
+            if (cursor.row + 1 < GetBoardSize(game)) cursor.row++;
+        }
+        else if (key == 'A') {
+            if (cursor.col > 0) cursor.col--;
+        }
+        else if (key == 'D') {
+            if (cursor.col + 1 < GetBoardSize(game)) cursor.col++;
+        }
+        else if (key == 13) {
+            ActionResult result = PlaceCurrentTurn(game, cursor);
+            if (result == ActionResult::Success) message = "Danh co thanh cong";
+            else if (result == ActionResult::Occupied) message = "O nay da duoc danh";
+            else if (result == ActionResult::OutOfBounds) message = "Vi tri ngoai ban co";
+            else message = "Khong the danh nuoc nay";
+        }
+        else if (key == 'P' || key == 27) {
+            PauseAction action = ShowPauseMenu(game);
+            if (action == PauseAction::ContinueGame) message = "Tiep tuc game";
+            else if (action == PauseAction::RestartGame) {
+                ResetCurrentMatch(game);
+                cursor = FindDefaultCursor(game);
+                message = "Da bat dau lai tran dau";
+            }
+            else if (action == PauseAction::BackToMainMenu) return;
+        }
+    }
+}
+
+bool ShowLoadMenu(caro::GameSession& game) {
+    int selected = 0;
+    string message;
+    while (true) {
+        ClearScreen();
+        cout << "=========== LOAD GAME ===========\n\n";
+        for (int i = 0; i < config::MAX_SAVE_SLOTS; ++i) {
+            PrintSelectableLine(GetSlotDisplayText(i + 1), selected == i);
+        }
+        PrintSelectableLine("Quay lai", selected == config::MAX_SAVE_SLOTS);
+        cout << "\nW/S de chon, Enter de load.\n";
+        if (!message.empty()) cout << "\n" << message << "\n";
+        int key = ReadKeyUpper();
+        if (key == 'W') {
+            selected--;
+            if (selected < 0) selected = config::MAX_SAVE_SLOTS;
+        }
+        else if (key == 'S') {
+            selected++;
+            if (selected > config::MAX_SAVE_SLOTS) selected = 0;
+        }
+        else if (key == 13) {
+            if (selected == config::MAX_SAVE_SLOTS) return false;
+            int slot = selected + 1;
+            string path = BuildSavePath(slot);
+            if (!FileExists(path)) {
+                message = "Slot nay dang trong";
+                continue;
+            }
+            if (LoadGameFromFile(game, path)) {
+                game.screen = ScreenState::Playing;
+                game.isPaused = false;
+                return true;
+            }
+            else {
+                message = "Load that bai";
+            }
+        }
+        else if (key == 27) {
+            return false;
+        }
+    }
+}
+
+void RunConsoleGame() {
+    EnsureSaveDirectory();
     while (true) {
         int choice = ShowMainMenu();
-
         if (choice == 0) {
             GameSession game;
-            if (ShowNewGameMenu(game)) {
-                RunGameLoop(game);
-            }
+            if (ShowNewGameMenu(game)) RunGameLoop(game);
         }
         else if (choice == 1) {
             GameSession game;
-            if (ShowLoadMenu(game)) {
-                RunGameLoop(game);
-            }
+            if (ShowLoadMenu(game)) RunGameLoop(game);
         }
-        else if (choice == 2) {
-            ClearScreen();
-            cout << "Tam biet!\n";
-            break;
-        }
+        else if (choice == 2) { break; }
     }
+}
 
-    return 0;
+void RunNewGame() {
+    EnsureSaveDirectory();
+    GameSession game;
+    if (ShowNewGameMenu(game)) RunGameLoop(game);
 }
